@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "vega-cli"
+version = "0.1.0"
+description = "VegaCLI: An open-source AI agent for the terminal"
+authors = ["Rushikesh Kadam"]
+readme = "README.md"
+packages = [{include = "vega_cli"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+rich = "^13.7.1"
+pydantic = "^2.6.4"
+python-dotenv = "^1.0.1"
+openai = "^1.14.1"
+gkeepapi = "^0.15.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
