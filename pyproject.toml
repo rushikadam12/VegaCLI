@@ -1,20 +1,32 @@
-[tool.poetry]
+[project]
 name = "vega-cli"
 version = "0.1.0"
 description = "VegaCLI: An open-source AI agent for the terminal"
-authors = ["Rushikesh Kadam"]
 readme = "README.md"
-packages = [{include = "vega_cli"}]
+requires-python = ">=3.12"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-click = "^8.1.7"
-rich = "^13.7.1"
-pydantic = "^2.6.4"
-python-dotenv = "^1.0.1"
-openai = "^1.14.1"
-gkeepapi = "^0.15.1"
+dependencies = [
+    "typer>=0.16.0",
+    "rich>=14.0.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.10.0",
+    "python-dotenv>=1.1.0",
+    "openai>=1.100.0",
+]
+
+[project.scripts]
+vega = "vega_cli.__main__:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.15.20",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vega_cli"]
