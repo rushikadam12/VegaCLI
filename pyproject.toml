@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.10.0",
     "python-dotenv>=1.1.0",
     "openai>=1.100.0",
+     "httpx>=0.28.0",
 ]
 
 [project.scripts]
@@ -30,3 +31,4 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["vega_cli"]
+

@@ -1,1 +1,0 @@
-# VegaCLI Core package
