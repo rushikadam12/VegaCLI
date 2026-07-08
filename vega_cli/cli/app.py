@@ -11,13 +11,13 @@ def main():
     Main entry point for the CLI. Renders banner, prompts for mode selection,
     and runs the chosen loop.
     """
-    # 1. Draw ASCII banner
+    #banner
     render_banner(animate=True,console=console)
 
-    # 2. Setup runtime
+    #Setup runtime
     rt = RunTime()
     try:
-        # Note: using the runtime's configured 'initalize' method
+        #  using the runtime's configured 'initalize' method
         rt.initalize()
     except Exception as e:
         render_error(f"Failed to initialize runtime: {e}")
@@ -26,11 +26,11 @@ def main():
     # TODO:options should be defined here not like this in array
     options = [
         "Ask Mode   (Standard Chat with Memory)",
-        "Agent Mode (Coming soon)",
+        "Agent Mode (Autonomous Goal-Directed)",
         "Exit"
     ]
 
-    # 3. Mode selection menu loop
+    #Mode selection menu loop
     try:
         while True:
             try:
@@ -50,10 +50,14 @@ def main():
                 except Exception as e:
                     render_error(f"An unexpected error occurred during chat: {e}")
             elif choice_idx == 1:
-                # Stub/placeholder for AGENT mode
-                console.print("\n[bold yellow]Agent Mode is not implemented yet.[/bold yellow]")
-                render_info("For now, please choose Ask Mode.")
-                continue
+                # Start AGENT mode
+                try:
+                    asyncio.run(rt.run_agent())
+                except (KeyboardInterrupt, asyncio.CancelledError):
+                    console.print()
+                    render_info("Exiting Agent Mode...")
+                except Exception as e:
+                    render_error(f"An unexpected error occurred during agent execution: {e}")
             elif choice_idx == 2:
                 render_info("Goodbye!")
                 break

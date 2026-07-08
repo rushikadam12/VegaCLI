@@ -41,6 +41,14 @@ class ChatSession:
 
     def __init__(self, agent: Agent) -> None:
         self.agent = agent
+        
+        # Subscribe to agent/tool execution events
+        from vega_cli.events.events import event_bus, EVENT_TOOL_CALL, EVENT_TOOL_RESPONSE, EVENT_ERROR
+        from vega_cli.cli.renderer import render_event
+        
+        event_bus.subscribe(EVENT_TOOL_CALL, render_event)
+        event_bus.subscribe(EVENT_TOOL_RESPONSE, render_event)
+        event_bus.subscribe(EVENT_ERROR, render_event)
 
     async def run(self) -> None:
         render_info("Type [green]/help[/green] for commands, [green]/exit[/green] to quit.")

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, AsyncIterator
-from vega_cli.types.message import Message
+from vega_cli.types.message import Message, ToolCall
 
 
 class BaseProvider(ABC):
@@ -25,10 +25,12 @@ class BaseProvider(ABC):
         self,
         messages: List[Message],
         tools: Optional[List[dict]] = None,
+        tool_calls_out: Optional[List[ToolCall]] = None,
     ) -> AsyncIterator[str]:
         """Send messages to the LLM and yield content chunks as they arrive.
 
         Args:
             messages: Conversation history including the latest user message.
             tools: Optional list of OpenAI-format tool schemas.
+            tool_calls_out: Optional list to accumulate streamed tool calls.
         """

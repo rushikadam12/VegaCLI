@@ -3,6 +3,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.align import Align
 from rich.markdown import Markdown
+from vega_cli.types.event import Event
 
 
 console = Console()
@@ -111,3 +112,27 @@ def render_interactive_menu(options: list[str], title: str = "Select Mode") -> i
                 raise KeyboardInterrupt
 
     return selected_index
+
+
+def render_event(event: Event):
+    """
+    Renders agent events (thoughts, tool calls, tool responses) to the console.
+    """
+    if event.type == "tool_call":
+        name = event.data.get("name")
+        args = event.data.get("arguments", {})
+        args_str = ", ".join(f"{k}={v}" for k, v in args.items())
+        console.print(f"[bold yellow]🔧 Tool Call:[/bold yellow] [cyan]{name}[/cyan]({args_str})")
+    elif event.type == "tool_response":
+        name = event.data.get("name")
+        result = event.data.get("result")
+        
+        # Format or truncate the result for cleaner terminal output
+        result_str = str(result)
+        if len(result_str) > 300:
+            result_str = result_str[:300] + "\n... (truncated)"
+            
+        console.print(f"[bold green]✔ Tool Response ({name}):[/bold green]\n{result_str}\n")
+    elif event.type == "error":
+        msg = event.data.get("message")
+        console.print(f"[bold red]❌ Error:[/bold red] {msg}")

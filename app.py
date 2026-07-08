@@ -13,8 +13,5 @@ from rich.console import Console
 
 console = Console()
 
-console.print("Hello VegaCLI")
-
-
 if __name__ == "__main__":
     main()
