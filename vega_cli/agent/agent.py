@@ -1,7 +1,8 @@
 import json
-from typing import List, AsyncIterator
+from typing import List, AsyncIterator, Optional
 from vega_cli.providers.base import BaseProvider
 from vega_cli.types.message import Message, ToolCall
+from vega_cli.tools.base import BaseTool
 from vega_cli.tools.registry import registry
 from vega_cli.events.events import (
     event_bus,
@@ -9,7 +10,7 @@ from vega_cli.events.events import (
     EVENT_TOOL_RESPONSE,
     EVENT_ERROR,
 )
-
+from vega_cli.config import settings
 
 class Agent:
     """
@@ -17,25 +18,35 @@ class Agent:
     Maintains conversation history so the LLM has memory across turns.
     """
 
-    def __init__(self, provider: BaseProvider, system_prompt: str = "") -> None:
+    def __init__(
+        self,
+        provider: BaseProvider,
+        system_prompt: str = "",
+        tools: Optional[List[BaseTool]] = None,
+    ) -> None:
         self.provider = provider
         self.history: List[Message] = []
-
+        self._tools = tools
         # Seed history with system prompt if provided
         if system_prompt:
             self.history.append(Message(role="system", content=system_prompt))
+
+    def _get_tools_schema(self) -> List[dict]:
+        tools_list = self._tools if self._tools is not None else registry.list()
+        return [t.to_openapi_schema() for t in tools_list]
 
     async def run(self, user_input: str) -> str:
         """Add user message, execute ReAct loop with tools, store history, return final answer."""
         self.history.append(Message(role="user", content=user_input))
 
-        from vega_cli.config import settings
-        max_loops = settings.max_agent_loops or 10
+        
+        max_loops = settings.max_agent_loops
 
         loop_count = 0
+
         while loop_count < max_loops:
             loop_count += 1
-            tools = [t.to_openapi_schema() for t in registry.list()]
+            tools = self._get_tools_schema()
 
             response: Message = await self.provider.generate(self.history, tools=tools)
 
@@ -67,7 +78,7 @@ class Agent:
                                 tool_result = await tool.execute(**args)
                                 event_bus.publish(
                                     EVENT_TOOL_RESPONSE,
-                                    {"name": tool_call.name, "result": tool_result},
+                                    {"name": tool_call.name, "result": tool_result, "arguments": args},
                                 )
                             except Exception as e:
                                 err_msg = f"Error executing tool '{tool_call.name}': {e}"
@@ -102,7 +113,7 @@ class Agent:
         loop_count = 0
         while loop_count < max_loops:
             loop_count += 1
-            tools = [t.to_openapi_schema() for t in registry.list()]
+            tools = self._get_tools_schema()
 
             tool_calls = []
             full_content = []
@@ -148,7 +159,7 @@ class Agent:
                                 tool_result = await tool.execute(**args)
                                 event_bus.publish(
                                     EVENT_TOOL_RESPONSE,
-                                    {"name": tool_call.name, "result": tool_result},
+                                    {"name": tool_call.name, "result": tool_result, "arguments": args},
                                 )
                             except Exception as e:
                                 err_msg = f"Error executing tool '{tool_call.name}': {e}"

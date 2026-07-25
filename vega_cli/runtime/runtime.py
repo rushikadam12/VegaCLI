@@ -3,7 +3,13 @@ from vega_cli.providers.factory import ProviderFactory
 from vega_cli.agent.agent import Agent
 from vega_cli.chatSession.chat_session import ChatSession
 from vega_cli.prompts.base import Prompt
-
+from vega_cli.tools.registry import registry
+from rich.console import Console
+from rich.panel import Panel
+from rich.markdown import Markdown
+from vega_cli.cli.renderer import render_info, render_error, render_event
+from vega_cli.events.events import event_bus, EVENT_TOOL_CALL, EVENT_TOOL_RESPONSE, EVENT_ERROR
+import asyncio
 
 class RunTime:
     def __init__(self):
@@ -21,26 +27,29 @@ class RunTime:
 
         self.provider = ProviderFactory.create(self.config.llm_provider)
 
+        # Autonomous Agent Mode: Full access to all tools & agent prompt
         self.agent = Agent(
             provider=self.provider,
-            system_prompt=Prompt.get_system_prompt(),
+            system_prompt=Prompt.get_system_prompt("agent"),
+            tools=registry.list(read_only=False),
+        )
+
+        # Ask Mode: Restricted to read-only tools & ask prompt
+        ask_agent = Agent(
+            provider=self.provider,
+            system_prompt=Prompt.get_system_prompt("ask"),
+            tools=registry.list(read_only=True),
         )
 
         self.chat_session = ChatSession(
-            agent=self.agent,
-            
+            agent=ask_agent,
         )
 
     async def run(self):
         await self.chat_session.run()
 
     async def run_agent(self):
-        from rich.console import Console
-        from rich.panel import Panel
-        from rich.markdown import Markdown
-        from vega_cli.cli.renderer import render_info, render_error, render_event
-        from vega_cli.events.events import event_bus, EVENT_TOOL_CALL, EVENT_TOOL_RESPONSE, EVENT_ERROR
-        import asyncio
+ 
 
         console = Console()
         

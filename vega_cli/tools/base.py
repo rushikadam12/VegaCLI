@@ -4,6 +4,7 @@ from typing import Dict, Any
 class BaseTool(ABC):
     name: str
     description: str
+    is_read_only: bool = False
 
     @property
     @abstractmethod

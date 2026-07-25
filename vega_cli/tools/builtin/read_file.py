@@ -7,6 +7,7 @@ from vega_cli.tools.base import BaseTool
 class ReadFileTool(BaseTool):
     name = "read_file"
     description = "Read the contents of a file."
+    is_read_only = True
 
     @property
     def parameters(self) -> Dict[str, Any]:

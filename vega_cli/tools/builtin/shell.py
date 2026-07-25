@@ -5,6 +5,7 @@ from vega_cli.tools.base import BaseTool
 class ShellTool(BaseTool):
     name = "shell"
     description = "Run a terminal/shell command on the user's local machine."
+    
 
     @property
     def parameters(self) -> Dict[str, Any]:

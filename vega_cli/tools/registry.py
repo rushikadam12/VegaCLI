@@ -14,7 +14,9 @@ class ToolRegistry:
     def get(self, name):
         return self._tools.get(name)
 
-    def list(self):
+    def list(self, read_only: bool = False):
+        if read_only:
+            return [t for t in self._tools.values() if getattr(t, "is_read_only", False)]
         return list(self._tools.values())
 
 

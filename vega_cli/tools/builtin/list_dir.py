@@ -5,6 +5,7 @@ from vega_cli.tools.base import BaseTool
 class ListDirTool(BaseTool):
     name = "list_dir"
     description = "List all files and subdirectories in a directory."
+    is_read_only = True
 
     @property
     def parameters(self) -> Dict[str, Any]:

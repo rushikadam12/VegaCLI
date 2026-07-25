@@ -114,25 +114,83 @@ def render_interactive_menu(options: list[str], title: str = "Select Mode") -> i
     return selected_index
 
 
+def _detect_lexer(path: str) -> str:
+    """Guess a Pygments lexer name from the file extension for syntax highlighting."""
+    ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+    return {
+        "py": "python",
+        "js": "javascript",
+        "ts": "typescript",
+        "jsx": "jsx",
+        "tsx": "tsx",
+        "json": "json",
+        "yaml": "yaml",
+        "yml": "yaml",
+        "toml": "toml",
+        "md": "markdown",
+        "sh": "bash",
+        "bash": "bash",
+        "zsh": "bash",
+        "ps1": "powershell",
+        "html": "html",
+        "css": "css",
+        "sql": "sql",
+        "rs": "rust",
+        "go": "go",
+        "java": "java",
+        "cpp": "cpp",
+        "c": "c",
+        "rb": "ruby",
+    }.get(ext, "text")
+
+
 def render_event(event: Event):
     """
-    Renders agent events (thoughts, tool calls, tool responses) to the console.
+    Renders agent events (tool calls, tool responses, errors) to the console.
     """
+    from rich.syntax import Syntax
+
     if event.type == "tool_call":
         name = event.data.get("name")
         args = event.data.get("arguments", {})
-        args_str = ", ".join(f"{k}={v}" for k, v in args.items())
+        args_str = ", ".join(f"{k}={v!r}" for k, v in args.items())
         console.print(f"[bold yellow]🔧 Tool Call:[/bold yellow] [cyan]{name}[/cyan]({args_str})")
+
     elif event.type == "tool_response":
         name = event.data.get("name")
-        result = event.data.get("result")
-        
-        # Format or truncate the result for cleaner terminal output
+        result = event.data.get("result", "")
+        args = event.data.get("arguments", {})
         result_str = str(result)
-        if len(result_str) > 300:
-            result_str = result_str[:300] + "\n... (truncated)"
-            
-        console.print(f"[bold green]✔ Tool Response ({name}):[/bold green]\n{result_str}\n")
+        # if len(result_str) > 300:
+        #     result_str = result_str[:300] + "\n... (truncated)"
+        #     console.print(f"[bold green]✔ Tool Response ({name}):[/bold green]\n{result_str}\n")
+        # For read_file: render with full syntax highlighting
+        if name == "read_file":
+            path = args.get("path", "")
+            lexer = _detect_lexer(path)
+            inner = Syntax(
+                result_str,
+                lexer,
+                theme="monokai",
+                line_numbers=True,
+                word_wrap=True,
+            )
+        else:
+            # For all other tools: render as plain Markdown text
+            inner = Markdown(result_str) if result_str else Text("(no output)")
+
+        width = max(20, console.width - 4)
+        console.print(
+            Panel(
+                inner,
+                title=f"[bold green]✔ Tool Response ({name})[/bold green]",
+                border_style="green",
+                padding=(1, 2),
+                width=width,
+            )
+        )
+
     elif event.type == "error":
         msg = event.data.get("message")
         console.print(f"[bold red]❌ Error:[/bold red] {msg}")
+
