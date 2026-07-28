@@ -143,7 +143,7 @@ def _detect_lexer(path: str) -> str:
         "rb": "ruby",
     }.get(ext, "text")
 
-
+# TODO:reduce tool response lengths and add better prompts for output
 def render_event(event: Event):
     """
     Renders agent events (tool calls, tool responses, errors) to the console.
@@ -161,9 +161,9 @@ def render_event(event: Event):
         result = event.data.get("result", "")
         args = event.data.get("arguments", {})
         result_str = str(result)
-        # if len(result_str) > 300:
-        #     result_str = result_str[:300] + "\n... (truncated)"
-        #     console.print(f"[bold green]✔ Tool Response ({name}):[/bold green]\n{result_str}\n")
+        if len(result_str) > 300:
+            result_str = result_str[:300] + "\n... (truncated)"
+            console.print(f"[bold green]✔ Tool Response ({name}):[/bold green]\n{result_str}\n")
         # For read_file: render with full syntax highlighting
         if name == "read_file":
             path = args.get("path", "")

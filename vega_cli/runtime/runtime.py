@@ -53,7 +53,7 @@ class RunTime:
 
         console = Console()
         
-        # Subscribe to events for this session
+        # subscribe to events for this session
         event_bus.subscribe(EVENT_TOOL_CALL, render_event)
         event_bus.subscribe(EVENT_TOOL_RESPONSE, render_event)
         event_bus.subscribe(EVENT_ERROR, render_event)
